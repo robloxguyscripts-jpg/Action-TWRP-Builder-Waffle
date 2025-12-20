@@ -31,9 +31,10 @@ jobs:
           repo init --depth=1 -u https://github.com/minimal-manifest-twrp/platform_manifest_twrp_aosp.git -b twrp-11
           repo sync -j$(nproc --all) --force-sync
 
-      - name: Clone Device Tree
+     - name: Clone Device Tree
         run: |
           cd workspace
+          # This creates the exact path: device/lenovo/android_device_lenovo_YT-X705X
           git clone https://github.com/robloxguyscripts-jpg/android_device_lenovo_YT-X705X device/lenovo/android_device_lenovo_YT-X705X
 
       - name: Build TWRP
