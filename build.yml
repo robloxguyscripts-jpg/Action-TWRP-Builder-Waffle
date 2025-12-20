@@ -18,7 +18,7 @@ jobs:
       - name: Install Repo
         run: |
           mkdir ~/bin
-          # Fixed broken URL
+          # Fixed URL to download the actual repo tool
           curl storage.googleapis.com > ~/bin/repo
           chmod a+x ~/bin/repo
           sudo ln -sf ~/bin/repo /usr/bin/repo
@@ -27,14 +27,14 @@ jobs:
         run: |
           mkdir workspace
           cd workspace
-          # Fixed broken URL
+          # Fixed URL to download the TWRP 11 source code
           repo init --depth=1 -u github.com -b twrp-11
           repo sync -j$(nproc --all) --force-sync
 
       - name: Clone Device Tree
         run: |
           cd workspace
-          # Fixed broken URL
+          # Fixed URL to download YOUR specific device tree
           git clone github.com ./device/lenovo/YT-X705X
 
       - name: Build TWRP
@@ -42,7 +42,7 @@ jobs:
           cd workspace
           source build/envsetup.sh
           export ALLOW_MISSING_DEPENDENCIES=true
-          # Fix: Using underscore to match your renamed makefile and avoid "Invalid Variant" error
+          # Aligned to use underscore naming to fix the "Invalid Variant" error
           lunch omni_YT_X705X-eng
           make recoveryimage -j$(nproc --all)
 
@@ -50,6 +50,4 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: TWRP-YT-X705X
-          # Note: The output folder will still use the codename from BoardConfig.mk
           path: workspace/out/target/product/YT_X705X/recovery.img
-
