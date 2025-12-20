@@ -34,7 +34,7 @@ jobs:
       - name: Clone Device Tree
         run: |
           cd workspace
-          # FIXED: Path now matches your BoardConfig.mk and omni_YT_X705X.mk
+          # The destination path must match DEVICE_PATH in BoardConfig.mk
           git clone https://github.com/robloxguyscripts-jpg/android_device_lenovo_YT-X705X device/lenovo/android_device_lenovo_YT-X705X
 
       - name: Build TWRP
