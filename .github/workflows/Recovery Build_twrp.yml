@@ -14,7 +14,7 @@ on:
       DEVICE_TREE_URL:
         description: 'DEVICE_TREE_URL'
         required: true
-        default: 'https://github.com/snowwolf725/device_oneplus_waffle-TWRP'
+        default: 'https://github.com/Nico170420/device_lenovo_YT_X705X'
       DEVICE_TREE_BRANCH:
         description: 'DEVICE_TREE_BRANCH'
         required: true
@@ -22,15 +22,15 @@ on:
       DEVICE_PATH:
         description: 'DEVICE_PATH'
         required: true
-        default: 'device/oneplus/waffle'
+        default: 'device/lenovo/YT_X705X'
       DEVICE_NAME:
         description: 'DEVICE_NAME'
         required: true
-        default: 'waffle'
+        default: 'YT_X705X'
       MAKEFILE_NAME:
         description: 'MAKEFILE_NAME'
         required: true
-        default: 'twrp_waffle'
+        default: 'twrp_YT_X705X'
       BUILD_TARGET:
         description: 'BUILD_TARGET'
         required: true
@@ -62,3 +62,57 @@ jobs:
       - name: Install OpenJDK
         uses: actions/setup-java@v4
         with:
+          distribution: 'zulu'
+          java-version: '11'
+
+      - name: Install repo
+        run: |
+          mkdir ~/bin
+          curl https://storage.googleapis.com/git-repo-downloads/repo > ~/bin/repo
+          chmod a+x ~/bin/repo
+          sudo ln -sf ~/bin/repo /usr/bin/repo
+
+      - name: Initialize repo
+        run: |
+          mkdir workspace
+          cd workspace
+          git config --global user.name "Nico170420"
+          git config --global user.email "b170420nc@gmail.com"
+          repo init --depth=1 -u ${{ github.event.inputs.MANIFEST_URL }} -b ${{ github.event.inputs.MANIFEST_BRANCH }}
+
+      - name: Repo Sync
+        run: |
+          cd workspace
+          repo sync -j$(nproc --all) --force-sync
+
+      - name: Clone device tree
+        run: |
+          git clone ${{ github.event.inputs.DEVICE_TREE_URL }} -b ${{ github.event.inputs.DEVICE_TREE_BRANCH }} workspace/${{ github.event.inputs.DEVICE_PATH }}
+
+      - name: Set Swap Space
+        uses: pierotofy/set-swap-space@master
+        with:
+          swap-size-gb: 12
+
+      - name: Building recovery
+        run: | 
+          cd workspace
+          source build/envsetup.sh
+          export ALLOW_MISSING_DEPENDENCIES=true
+          lunch ${{ github.event.inputs.MAKEFILE_NAME }}-eng
+          
+          # --- THE 99% SYMLINK FIX ---
+          # We delete these folders so the build system can create the /etc symlink safely
+          rm -rf out/target/product/${{ github.event.inputs.DEVICE_NAME }}/root/etc
+          rm -rf out/target/product/${{ github.event.inputs.DEVICE_NAME }}/recovery/root/etc
+          
+          make ${{ github.event.inputs.BUILD_TARGET }}image -j$(nproc --all)
+          
+          # Copy result to root
+          cp out/target/product/${{ github.event.inputs.DEVICE_NAME }}/${{ github.event.inputs.BUILD_TARGET }}.img ../TWRP-Result.img
+
+      - name: Upload Artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: TWRP-Image-${{ github.event.inputs.DEVICE_NAME }}
+          path: TWRP-Result.img
