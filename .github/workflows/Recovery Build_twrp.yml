@@ -120,10 +120,14 @@ jobs:
           source build/envsetup.sh
           export ALLOW_MISSING_DEPENDENCIES=true
           lunch ${{ github.event.inputs.MAKEFILE_NAME }}-eng
-          # THE FIX: Clearing the folders that caused the 'non-empty directory' error
-          rm -rf out/target/product/${{ github.event.inputs.DEVICE_NAME }}/recovery/root/etc
+          
+          # FORCE DELETE THE TROUBLESOME DIRECTORIES
+          # We do this twice: once at the start and once as a retry if it fails
           rm -rf out/target/product/${{ github.event.inputs.DEVICE_NAME }}/root/etc
-          make ${{ github.event.inputs.BUILD_TARGET }}image -j$(nproc --all)
+          rm -rf out/target/product/${{ github.event.inputs.DEVICE_NAME }}/recovery/root/etc
+          
+          make ${{ github.event.inputs.BUILD_TARGET }}image -j$(nproc --all) || (rm -rf out/target/product/${{ github.event.inputs.DEVICE_NAME }}/recovery/root/etc && make ${{ github.event.inputs.BUILD_TARGET }}image -j$(nproc --all))
+          
           cp out/target/product/${{ github.event.inputs.DEVICE_NAME }}/${{ github.event.inputs.BUILD_TARGET }}.img ../TWRP-Result.img
         working-directory: workspace
 
