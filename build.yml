@@ -28,21 +28,23 @@ jobs:
           cd workspace
           git config --global user.name "GitHub Action"
           git config --global user.email "action@github.com"
-          repo init --depth=1 -u https://github.com/minimal-manifest-twrp/platform_manifest_twrp_omni.git -b twrp-11
+          # UPDATED: Using AOSP manifest and twrp-11 branch
+          repo init --depth=1 -u https://github.com/minimal-manifest-twrp/platform_manifest_twrp_aosp.git -b twrp-11
           repo sync -j$(nproc --all) --force-sync
 
       - name: Clone Device Tree
         run: |
+          # UPDATED: Cloned INTO the workspace folder
           cd workspace
-          # The destination path must match DEVICE_PATH in BoardConfig.mk
-          git clone https://github.com/robloxguyscripts-jpg/android_device_lenovo_YT-X705X device/lenovo/android_device_lenovo_YT-X705X
+          git clone https://github.com/robloxguyscripts-jpg/android_device_lenovo_YT-X705X device/lenovo/YT_X705X
 
       - name: Build TWRP
         run: |
           cd workspace
           source build/envsetup.sh
           export ALLOW_MISSING_DEPENDENCIES=true
-          lunch omni_YT_X705X-eng
+          # UPDATED: Using twrp_ prefix for AOSP base
+          lunch twrp_YT_X705X-eng || lunch omni_YT_X705X-eng
           mka recoveryimage -j$(nproc --all)
 
       - name: Upload Artifact
