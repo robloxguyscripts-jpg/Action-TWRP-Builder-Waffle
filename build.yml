@@ -34,7 +34,7 @@ jobs:
       - name: Clone Device Tree
         run: |
           cd workspace
-          # We force the clone into the 'YT_X705X' folder to match your omni file
+          # FORCING THE FOLDER NAME TO YT_X705X
           git clone https://github.com/robloxguyscripts-jpg/android_device_lenovo_YT-X705X device/lenovo/YT_X705X
 
       - name: Build TWRP
@@ -48,5 +48,5 @@ jobs:
       - name: Upload Artifact
         uses: actions/upload-artifact@v4
         with:
-          name: TWRP-YT_X705X
+          name: TWRP-YT_X705X-Result
           path: workspace/out/target/product/YT_X705X/recovery.img
